@@ -63,7 +63,8 @@ end
             ArraySerializer
           end
         else
-          _const_get build_serializer_class(resource, options)
+          serializer_class = "#{resource.class.name}Serializer"
+          serializer_class.safe_constantize
         end
       end
 
