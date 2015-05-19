@@ -257,7 +257,7 @@ ActiveModel::Serializer.setup do |config|
 end
 ````
 
-This will build association keys like `comments` or `author` instead of `comment_ids` or `author_id`. 
+This will build association keys like `comments` or `author` instead of `comment_ids` or `author_id`.
 
 ## Getting the old version
 
@@ -304,7 +304,7 @@ Since this shadows any attribute named `object`, you can include them through `o
 
 ```ruby
 class VersionSerializer < ActiveModel::Serializer
-  attribute :version_object, key: :object
+  attributes :version_object
 
   def version_object
     object.object
@@ -755,18 +755,18 @@ end
     "title": "New post",
     "attachments": [
       {
-        "type": "image"
+        "type": "image",
         "image": {
-          "id": 3
-          "name": "logo"
+          "id": 3,
+          "name": "logo",
           "url": "http://images.com/logo.jpg"
         }
       },
       {
-        "type": "video"
+        "type": "video",
         "video": {
-          "id": 12
-          "uid": "XCSSMDFWW"
+          "id": 12,
+          "uid": "XCSSMDFWW",
           "source": "youtube"
         }
       }
@@ -793,11 +793,11 @@ end
     "title": "New post",
     "attachment_ids": [
       {
-        "type": "image"
+        "type": "image",
         "id": 12
       },
       {
-        "type": "video"
+        "type": "video",
         "id": 3
       }
     ]

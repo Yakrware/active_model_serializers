@@ -56,7 +56,9 @@ end
       attr_reader :key_format
 
       def serializer_for(resource, options = {})
-        if resource.respond_to?(:each)
+        if resource.respond_to?(:serializer_class)
+          resource.serializer_class
+        elsif resource.respond_to?(:to_ary)
           if Object.constants.include?(:ArraySerializer)
             ::ArraySerializer
           else
@@ -162,7 +164,7 @@ end
       end
     end
 
-    def associations
+    def associations(options={})
       associations = self.class._associations
       included_associations = filter(associations.keys)
       associations.each_with_object({}) do |(name, association), hash|
@@ -179,7 +181,7 @@ end
             if association.embed_namespace?
               hash = hash[association.embed_namespace] ||= {}
             end
-            hash[association.embedded_key] = serialize association
+            hash[association.embedded_key] = serialize association, options
           end
         end
       end
@@ -203,7 +205,9 @@ end
           association_serializer = build_serializer(association)
           # we must do this always because even if the current association is not
           # embeded in root, it might have its own associations that are embeded in root
-          hash.merge!(association_serializer.embedded_in_root_associations) {|key, oldval, newval| [newval, oldval].flatten }
+          hash.merge!(association_serializer.embedded_in_root_associations) do |key, oldval, newval|
+            oldval.merge(newval) { |_, oldval, newval| [oldval, newval].flatten.uniq }
+          end
 
           if association.embed_in_root?
             if association.embed_in_root_key?
@@ -237,8 +241,8 @@ end
       end
     end
 
-    def serialize(association)
-      build_serializer(association).serializable_object
+    def serialize(association,options={})
+      build_serializer(association).serializable_object(options)
     end
 
     def serialize_ids(association)
@@ -274,10 +278,16 @@ end
       end]
     end
 
+    attr_writer :serialization_options
+    def serialization_options
+      @serialization_options || {}
+    end
+
     def serializable_object(options={})
+      self.serialization_options = options
       return @wrap_in_array ? [] : nil if @object.nil?
       hash = attributes
-      hash.merge! associations
+      hash.merge! associations(options)
       hash = convert_keys(hash) if key_format.present?
       hash = { :type => type_name(@object), type_name(@object) => hash } if @polymorphic
       @wrap_in_array ? [hash] : hash

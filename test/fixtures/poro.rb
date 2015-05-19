@@ -47,6 +47,12 @@ class Post < Model
   end
 end
 
+class SpecialPost < Post
+  def special_comment
+    @speical_comment ||= Comment.new(content: 'special')
+  end
+end
+
 class Comment < Model
 end
 
@@ -82,7 +88,7 @@ class UserSerializer < ActiveModel::Serializer
 end
 
 class UserInfoSerializer < ActiveModel::Serializer
-  has_one :user
+  has_one :user, serializer: UserSerializer
 end
 
 class ProfileSerializer < ActiveModel::Serializer
@@ -94,10 +100,6 @@ class ProfileSerializer < ActiveModel::Serializer
   attributes :name, :description
 end
 
-class DifferentProfileSerializer < ActiveModel::Serializer
-  attributes :name
-end
-
 class CategorySerializer < ActiveModel::Serializer
   attributes :name
 
@@ -107,7 +109,20 @@ end
 class PostSerializer < ActiveModel::Serializer
   attributes :title, :body
 
+  def title
+    keyword = serialization_options[:highlight_keyword]
+    title = object.read_attribute_for_serialization(:title)
+    title = title.gsub(keyword,"'#{keyword}'") if keyword
+    title
+  end
+
   has_many :comments
+end
+
+class SpecialPostSerializer < ActiveModel::Serializer
+  attributes :title, :body
+  has_many :comments, root: :comments, embed_in_root: true, embed: :ids
+  has_one :special_comment, root: :comments, embed_in_root: true, embed: :ids
 end
 
 class CommentSerializer < ActiveModel::Serializer

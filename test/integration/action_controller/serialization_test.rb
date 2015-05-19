@@ -213,8 +213,8 @@ module ActionController
     class LowerCamelWoRootSerializerTest < ActionController::TestCase
       class WebLogController < ActionController::Base
         def render_without_root
-          render json: WebLog.new({name: 'Name 1', display_name: 'Display Name 1'}), 
-                 root: false, 
+          render json: WebLog.new({name: 'Name 1', display_name: 'Display Name 1'}),
+                 root: false,
                  serializer: WebLogLowerCamelSerializer
         end
       end
@@ -231,9 +231,9 @@ module ActionController
     class LowerCamelArrayWoRootSerializerTest < ActionController::TestCase
       class WebLogController < ActionController::Base
         def render_array_without_root
-          render json: [WebLog.new({name: 'Name 1', display_name: 'Display Name 1'}), 
-                        WebLog.new({name: 'Name 2', display_name: 'Display Name 2'})], 
-                 root: false, 
+          render json: [WebLog.new({name: 'Name 1', display_name: 'Display Name 1'}),
+                        WebLog.new({name: 'Name 2', display_name: 'Display Name 2'})],
+                 root: false,
                  each_serializer: WebLogLowerCamelSerializer
         end
       end
@@ -281,22 +281,6 @@ module ActionController
         assert_equal 'application/json', @response.content_type
 
         assert_equal("{\"my\":[{\"name\":\"Name 1\",\"email\":\"mail@server.com\",\"profile_id\":#{@controller.user.profile.object_id}}],\"profiles\":[{\"name\":\"N1\",\"description\":\"D1\"}]}", @response.body)
-      end
-    end
-  
-    class ExplicitEachSerializerWithEnumarableObjectTest < ActionController::TestCase
-      class MyController < ActionController::Base
-        def render_array
-          render json: [Profile.new({ name: 'Name 1', description: 'Description 1', comments: 'Comments 1' })].to_enum, each_serializer: DifferentProfileSerializer
-        end
-      end
-
-      tests MyController
-
-      def test_render_array
-        get :render_array
-        assert_equal 'application/json', @response.content_type
-        assert_equal '{"my":[{"name":"Name 1"}]}', @response.body
       end
     end
   end
